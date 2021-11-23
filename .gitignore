@@ -1,0 +1,6 @@
+env/
+db.sqlite3
+.idea
+proj_docs
+secret_settings.py
+__pycache__/
