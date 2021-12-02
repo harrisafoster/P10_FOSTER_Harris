@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from .models import Project, Contributor, Issue, Comment
-from .serializers import ProjectSerializer, ContributorSerializer
-from .permissions import IsProjectOverseer, IsProjectOverseerUser
+from .serializers import ProjectSerializer, ContributorSerializer, IssueSerializer
+from .permissions import IsProjectOverseer, IsProjectOverseerUser, IsProjectContributor
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -53,9 +53,56 @@ class ContributorViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def destroy(self, request, pk, parent_lookup_project):
+    def delete(self, request, pk, parent_lookup_project):
         queryset = Contributor.objects.filter(pk=pk, project=parent_lookup_project)
         contributor = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, contributor)
         contributor.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class IssueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    queryset = Issue.objects.all()
+    serializer_class = IssueSerializer
+    permission_classes = [permissions.IsAuthenticated, IsProjectContributor]
+    model = Issue
+
+    def create(self, request, parent_lookup_project):
+        project = get_object_or_404(Project, pk=parent_lookup_project)
+        self.check_object_permissions(request, project)
+        serializer = IssueSerializer(
+            data=request.data, context={'request': request, 'project': parent_lookup_project})
+        if serializer.is_valid():
+            serializer.save(
+                author=self.request.user,
+                project=Project.objects.get(pk=parent_lookup_project)
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk, parent_lookup_project):
+        #TODO have to enter all fields again, maybe we can keep unchanged values ?
+        queryset = Issue.objects.filter(pk=pk, project=parent_lookup_project)
+        issue = get_object_or_404(queryset, pk=pk)
+        self.check_object_permissions(request, issue)
+        serializer = IssueSerializer(issue,
+                                     data=request.data,
+                                     context={'request': request,
+                                              'project': parent_lookup_project})
+        if serializer.is_valid():
+            serializer.save(
+                author=self.request.user,
+                project=Project.objects.get(pk=parent_lookup_project)
+            )
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, parent_lookup_project):
+        queryset = Issue.objects.filter(pk=pk, project=parent_lookup_project)
+        issue = get_object_or_404(queryset, pk=pk)
+        comments = Comment.objects.filter(issue=pk)
+        self.check_object_permissions(request, issue)
+        issue.delete()
+        for comment in comments:
+            comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

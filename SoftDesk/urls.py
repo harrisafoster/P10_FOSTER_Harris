@@ -18,7 +18,7 @@ from django.urls import path, include
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 
-from projects.views import ProjectViewSet, ContributorViewSet
+from projects.views import ProjectViewSet, ContributorViewSet, IssueViewSet
 from user_management.views import CreateUserView, PersonalTokenObtainView
 
 router = ExtendedSimpleRouter()
@@ -27,6 +27,13 @@ router = ExtendedSimpleRouter()
           .register(r'contributors',
                     ContributorViewSet,
                     basename='contributors',
+                    parents_query_lookups=['project'])
+)
+(
+    router.register(r'projects', ProjectViewSet, basename='projects')
+          .register(r'issues',
+                    IssueViewSet,
+                    basename='issues',
                     parents_query_lookups=['project'])
 )
 
