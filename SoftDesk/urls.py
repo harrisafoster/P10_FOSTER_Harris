@@ -15,14 +15,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
+from rest_framework_extensions.routers import ExtendedSimpleRouter
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 
-from projects.views import ProjectViewSet
+from projects.views import ProjectViewSet, ContributorViewSet
 from user_management.views import CreateUserView, PersonalTokenObtainView
 
-router = routers.SimpleRouter()
-router.register('projects', ProjectViewSet, basename='projects')
+router = ExtendedSimpleRouter()
+(
+    router.register(r'projects', ProjectViewSet, basename='projects')
+          .register(r'contributors',
+                    ContributorViewSet,
+                    basename='contributors',
+                    parents_query_lookups=['project'])
+)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
