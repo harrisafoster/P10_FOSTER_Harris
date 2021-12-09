@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from .models import Project, Contributor, Issue, Comment
-from .serializers import ProjectSerializer, ContributorSerializer, IssueSerializer
+from .serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer
 from .permissions import IsProjectOverseer, IsProjectOverseerUser, IsProjectContributor
 
 
@@ -28,7 +28,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk=None):
+    def destroy(self, request, pk=None):
         project = get_object_or_404(Project, pk=pk)
         self.check_object_permissions(request, project)
         project.delete()
@@ -53,7 +53,7 @@ class ContributorViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk, parent_lookup_project):
+    def destroy(self, request, pk, parent_lookup_project):
         queryset = Contributor.objects.filter(pk=pk, project=parent_lookup_project)
         contributor = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, contributor)
@@ -97,7 +97,7 @@ class IssueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk, parent_lookup_project):
+    def destroy(self, request, pk, parent_lookup_project):
         queryset = Issue.objects.filter(pk=pk, project=parent_lookup_project)
         issue = get_object_or_404(queryset, pk=pk)
         comments = Comment.objects.filter(issue=pk)
@@ -105,4 +105,70 @@ class IssueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         issue.delete()
         for comment in comments:
             comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    model = Comment
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated, IsProjectContributor]
+
+    def list(self, request, parent_lookup_project, parent_lookup_issue):
+        if not Issue.objects.filter(pk=parent_lookup_issue).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        project = get_object_or_404(Project, pk=parent_lookup_project)
+        self.check_object_permissions(request, project)
+        queryset = Comment.objects.filter(
+            issue__project=parent_lookup_project,
+            issue=parent_lookup_issue
+        )
+        serializer = CommentSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk, parent_lookup_project, parent_lookup_issue):
+        queryset = Comment.objects.filter(
+            pk=pk,
+            issue__project=parent_lookup_project,
+            issue=parent_lookup_issue
+        )
+        comment = get_object_or_404(queryset, pk=pk)
+        self.check_object_permissions(request, comment)
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data)
+
+    def create(self, request, parent_lookup_project, parent_lookup_issue):
+        if not Issue.objects.filter(pk=parent_lookup_issue, project=parent_lookup_project).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        issue = Issue.objects.get(pk=parent_lookup_issue)
+        self.check_object_permissions(request, issue)
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(
+                author=self.request.user,
+                issue=Issue.objects.get(pk=parent_lookup_issue)
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk, parent_lookup_project, parent_lookup_issue):
+        if not Issue.objects.filter(pk=parent_lookup_issue, project=parent_lookup_project).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        comment = get_object_or_404(Comment, pk=pk, issue=parent_lookup_issue)
+        self.check_object_permissions(request, comment)
+        serializer = CommentSerializer(comment, data=request.data)
+        if serializer.is_valid():
+            serializer.save(
+                author=self.request.user,
+                issue=Issue.objects.get(pk=parent_lookup_issue)
+            )
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk, parent_lookup_project, parent_lookup_issue):
+        if not Issue.objects.filter(pk=parent_lookup_issue).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        comment = get_object_or_404(Comment, pk=pk, issue=parent_lookup_issue)
+        self.check_object_permissions(request, comment)
+        comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

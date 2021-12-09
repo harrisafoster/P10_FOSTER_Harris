@@ -16,10 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_extensions.routers import ExtendedSimpleRouter
-from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from projects.views import ProjectViewSet, ContributorViewSet, IssueViewSet
-from user_management.views import CreateUserView, PersonalTokenObtainView
+from projects.views import ProjectViewSet, ContributorViewSet, IssueViewSet, CommentViewSet
+from user_management.views import CreateUserView
 
 router = ExtendedSimpleRouter()
 (
@@ -35,15 +35,16 @@ router = ExtendedSimpleRouter()
                     IssueViewSet,
                     basename='issues',
                     parents_query_lookups=['project'])
+          .register(r'comments',
+                    CommentViewSet,
+                    basename='comments',
+                    parents_query_lookups=['project', 'issue'])
 )
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login/', PersonalTokenObtainView.as_view(), name='token_obtain'),
+    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('signup/', CreateUserView.as_view(), name='signup'),
     path('api-auth/', include('rest_framework.urls')),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include(router.urls)),
 ]

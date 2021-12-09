@@ -39,7 +39,7 @@ class IssueSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Issue
-        fields = ['issue_id', 'title', 'desc', 'tag', 'priority',
+        fields = ['issue_id', 'title', 'description', 'tag', 'priority',
                   'status', 'author', 'assignee', 'created_time']
 
     def validate_assignee(self, assignee):
@@ -51,3 +51,11 @@ class IssueSerializer(serializers.ModelSerializer):
                             + ' is not registered for the project.'
             raise serializers.ValidationError(error_message)
         return assignee
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source='author.username')
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'description', 'author', 'created_time']

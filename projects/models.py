@@ -58,7 +58,7 @@ class Contributor(models.Model):
 class Issue(models.Model):
     # linked to users, projects, comments
     title = models.CharField(max_length=128)
-    desc = models.CharField(max_length=2048)
+    description = models.CharField(max_length=2048)
     tag = models.CharField(choices=tag_options, max_length=128)
     priority = models.CharField(choices=priority_options, max_length=128)
     project = models.ForeignKey(
@@ -88,6 +88,7 @@ class Comment(models.Model):
         related_name='comments',
         on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
+    project = models.CharField(max_length=128, default=None, null=True)
 
     class Meta:
         ordering = ['created_time']
