@@ -22,8 +22,7 @@ class IsProjectOverseer(permissions.BasePermission):
 
 class IsProjectContributor(permissions.BasePermission):
 
-    @staticmethod
-    def has_project_permission(request, obj):
+    def has_object_permission(self, request, view, obj):
 
         if request.method in permissions.SAFE_METHODS or request.method == 'POST':
             if isinstance(obj, Project):
@@ -41,8 +40,7 @@ class IsProjectContributor(permissions.BasePermission):
 
 class IsProjectOverseerUser(permissions.BasePermission):
 
-    @staticmethod
-    def has_project_permission(request, obj):
+    def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return Contributor.objects.filter(
                     user=request.user, project=obj).exists()
@@ -50,14 +48,14 @@ class IsProjectOverseerUser(permissions.BasePermission):
         elif request.method == 'DELETE':
             return Contributor.objects.filter(
                     user=request.user, project=obj.project,
-                    permission='manager').exists() \
+                    permission='overseer').exists() \
                     and (Contributor.objects.filter(
-                        permission='manager', project=obj.project).count() > 1
-                        or obj.permission == 'contributeur')
+                        permission='overseer', project=obj.project).count() > 1
+                        or obj.permission == 'contributor')
 
         elif request.method == 'POST':
             return Contributor.objects.filter(
-                    user=request.user, project=obj, permission='manager'
+                    user=request.user, project=obj, permission='overseer'
                     ).exists()
         else:
             return False
