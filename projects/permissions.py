@@ -4,6 +4,10 @@ from .models import Project, Contributor, Issue, Comment
 
 
 class IsProjectOverseer(permissions.BasePermission):
+    """
+    Verification: user is authenticated => Permissions allowed to create projects.
+    Verification: user is project overseer => Permissions allowed to edit/delete own project(s)
+    """
     def has_object_permission(self, request, view, obj):
         if request.method == 'POST':
             return True
@@ -21,7 +25,9 @@ class IsProjectOverseer(permissions.BasePermission):
 
 
 class IsProjectContributor(permissions.BasePermission):
-
+    """
+    Verification: User is contributor => contributor permissions accorded
+    """
     def has_object_permission(self, request, view, obj):
 
         if request.method in permissions.SAFE_METHODS or request.method == 'POST':
@@ -39,7 +45,10 @@ class IsProjectContributor(permissions.BasePermission):
 
 
 class IsCommentAuthor(permissions.BasePermission):
-
+    """
+    Verification: user is contributor => permission accorded to view/create comments
+    Verification: user is author of comment => permission accorded to edit/delete own comments
+    """
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return Contributor.objects.filter(
@@ -62,7 +71,10 @@ class IsCommentAuthor(permissions.BasePermission):
 
 
 class IsIssueAuthor(permissions.BasePermission):
-
+    """
+    Verification: user is contributor => permission accorded to create/view issues
+    Verification: user is issue author => permission accorded to edit/delete own issues
+    """
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return Contributor.objects.filter(
@@ -85,7 +97,11 @@ class IsIssueAuthor(permissions.BasePermission):
 
 
 class IsProjectOverseerUser(permissions.BasePermission):
-
+    """
+    Verification: user is project contributor => permissions accorded to view contributors
+    Verification: user is project author => permissions accorded to create/edit/delete contributors
+    Verification: there is more than one project overseer => permission accorded to delete one of the overseers
+    """
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return Contributor.objects.filter(
@@ -101,7 +117,7 @@ class IsProjectOverseerUser(permissions.BasePermission):
 
         elif request.method == 'POST':
             return Contributor.objects.filter(
-                    user=request.user, project=obj.project, permission='overseer').exists()
+                    user=request.user, project=obj, permission='overseer').exists()
 
         elif request.method == 'PUT':
             return Contributor.objects.filter(

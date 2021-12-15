@@ -22,6 +22,7 @@ from projects.views import ProjectViewSet, ContributorViewSet, IssueViewSet, Com
 from user_management.views import CreateUserView
 
 router = ExtendedSimpleRouter()
+# drf extensions used to create nested routers
 (
     router.register(r'projects', ProjectViewSet, basename='projects')
           .register(r'contributors',

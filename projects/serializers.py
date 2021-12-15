@@ -43,6 +43,10 @@ class IssueSerializer(serializers.ModelSerializer):
                   'status', 'author', 'assignee', 'created_time']
 
     def validate_assignee(self, assignee):
+        """
+        :param assignee: user object
+        :return: boolean response, verification if assignee is a project contributor
+        """
         user_id = User.objects.get(username=assignee).id
         if not Contributor.objects.filter(
                        user=user_id, project=self.context['project']).exists():

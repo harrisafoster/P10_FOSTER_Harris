@@ -34,14 +34,14 @@ tag_options = (
 
 
 class Project(models.Model):
-    # links to contributors, issues, users (optional)
+    """links to contributors, issues, users (optional)"""
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048)
     type = models.CharField(choices=type_options, max_length=128)
 
 
 class Contributor(models.Model):
-    # linked to projects, users
+    """linked to projects, users"""
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     project = models.ForeignKey(
@@ -56,7 +56,7 @@ class Contributor(models.Model):
 
 
 class Issue(models.Model):
-    # linked to users, projects, comments
+    """linked to users, projects, comments"""
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=2048)
     tag = models.CharField(choices=tag_options, max_length=128)
@@ -79,7 +79,7 @@ class Issue(models.Model):
 
 
 class Comment(models.Model):
-    # linked to issues, users
+    """linked to issues, users"""
     description = models.TextField(max_length=2048)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
