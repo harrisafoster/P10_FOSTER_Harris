@@ -133,7 +133,8 @@ class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             issue=parent_lookup_issue
         )
         comment = get_object_or_404(queryset, pk=pk)
-        self.check_object_permissions(request, comment)
+        project = get_object_or_404(Project, pk=parent_lookup_project)
+        self.check_object_permissions(request, project)
         serializer = CommentSerializer(comment)
         return Response(serializer.data)
 
