@@ -38,6 +38,52 @@ class IsProjectContributor(permissions.BasePermission):
             return obj.author == request.user
 
 
+class IsCommentAuthor(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return Contributor.objects.filter(
+                    user=request.user, project=obj.project).exists()
+
+        elif request.method == 'POST':
+            return Contributor.objects.filter(
+                    user=request.user, project=obj.project).exists()
+
+        elif request.method == 'DELETE':
+            return Comment.objects.filter(
+                author=request.user, issue=obj.issue).exists()
+
+        elif request.method == 'PUT':
+            return Comment.objects.filter(
+                author=request.user, issue=obj.issue).exists()
+
+        else:
+            return False
+
+
+class IsIssueAuthor(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return Contributor.objects.filter(
+                    user=request.user, project=obj).exists()
+
+        elif request.method == 'POST':
+            return Contributor.objects.filter(
+                    user=request.user, project=obj).exists()
+
+        elif request.method == 'DELETE':
+            return Issue.objects.filter(
+                author=request.user, project=obj.project).exists()
+
+        elif request.method == 'PUT':
+            return Issue.objects.filter(
+                author=request.user, project=obj.project).exists()
+
+        else:
+            return False
+
+
 class IsProjectOverseerUser(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):

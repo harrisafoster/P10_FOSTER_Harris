@@ -5,7 +5,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from .models import Project, Contributor, Issue, Comment
 from .serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer
-from .permissions import IsProjectOverseer, IsProjectOverseerUser, IsProjectContributor
+from .permissions import IsProjectOverseer, IsProjectOverseerUser, IsProjectContributor, IsCommentAuthor, IsIssueAuthor
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -50,7 +50,7 @@ class ContributorViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         serializer = ContributorSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response(status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk, parent_lookup_project):
@@ -64,7 +64,7 @@ class ContributorViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 class IssueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = Issue.objects.all()
     serializer_class = IssueSerializer
-    permission_classes = [permissions.IsAuthenticated, IsProjectContributor]
+    permission_classes = [permissions.IsAuthenticated, IsProjectContributor, IsIssueAuthor]
     model = Issue
 
     def create(self, request, parent_lookup_project):
@@ -81,14 +81,14 @@ class IssueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk, parent_lookup_project):
-        #TODO have to enter all fields again, maybe we can keep unchanged values ?
         queryset = Issue.objects.filter(pk=pk, project=parent_lookup_project)
         issue = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, issue)
         serializer = IssueSerializer(issue,
                                      data=request.data,
                                      context={'request': request,
-                                              'project': parent_lookup_project})
+                                              'project': parent_lookup_project},
+                                     partial=True)
         if serializer.is_valid():
             serializer.save(
                 author=self.request.user,
@@ -112,7 +112,7 @@ class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     model = Comment
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated, IsProjectContributor]
+    permission_classes = [permissions.IsAuthenticated, IsProjectContributor, IsCommentAuthor]
 
     def list(self, request, parent_lookup_project, parent_lookup_issue):
         if not Issue.objects.filter(pk=parent_lookup_issue).exists():
@@ -156,7 +156,7 @@ class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
         comment = get_object_or_404(Comment, pk=pk, issue=parent_lookup_issue)
         self.check_object_permissions(request, comment)
-        serializer = CommentSerializer(comment, data=request.data)
+        serializer = CommentSerializer(comment, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save(
                 author=self.request.user,
