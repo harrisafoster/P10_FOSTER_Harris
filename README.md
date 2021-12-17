@@ -46,6 +46,22 @@ $ pip install -r requirements.txt
 ```sh
 $ python manage.py migrate
 ```
+#### Générez votre propre SECRET_KEY :
+Vous allez remarquer que vous n'avez pas de fichier secret_settings.py et c'est normal. Cette étape permet de
+protéger la clé secrète de l'API. Pour créer, rensigner et utiliser votre nouvelle clé secrète veuillez suivre les 
+étapes ci-dessous:
+```sh
+$ cd SoftDesk
+$ touch secret_settings.py
+$ python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+```
+Une fois que vous aurez votre nouvelle clé secrète générée, mettez-la dans votre secret_settings.py exactement comme ceci:  
+key = votre_nouvelle_clé  
+Après avoir fait cela, les imports dans votre settings.py vont fonctionner correctement
+#### Créez votre utilisateur admin avec :
+```sh
+$ python manage.py createsuperuser
+```
 ## Utilisation
 ### Vous pouvez mettre l'API SoftDesk en route depuis votre terminal avec :
 ```sh
