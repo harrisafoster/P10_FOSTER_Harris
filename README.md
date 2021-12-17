@@ -48,8 +48,8 @@ $ python manage.py migrate
 ```
 #### Générez votre propre SECRET_KEY :
 Vous allez remarquer que vous n'avez pas de fichier secret_settings.py et c'est normal. Cette étape permet de
-protéger la clé secrète de l'API. Pour créer, rensigner et utiliser votre nouvelle clé secrète veuillez suivre les 
-étapes ci-dessous:
+protéger la clé secrète de l'API. Pour créer, renseigner et utiliser votre nouvelle clé secrète veuillez suivre les 
+étapes ci-dessous :
 ```sh
 $ cd SoftDesk
 $ touch secret_settings.py
