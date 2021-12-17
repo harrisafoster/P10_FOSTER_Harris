@@ -16,16 +16,6 @@ Projet 10 OpenClassrooms
 - Documentation Postman disponible [ici](https://documenter.getpostman.com/view/14998980/UVR8nmcV)
 - Tous les endpoints sont inclus et documentés
 
-### Conditions de connexion et tests
-Il y a déjà une base de données pré-renseignée qui contient les utilisateurs suivants :
-- admin (mot de passe : password)
-- staff (mot de passe : password)
-- user (mot de passe : password)
-
-Il y a donc aussi des projects, issues et commentaires. 
-Vous pouvez tester les endpoints en utilisant ces utilisateurs de test.
-
-
 ## Prérequis de base
 - Une application de type 'terminal' - GitBash, Mintty, Cygwin (si vous êtes sur Windows) 
    ou les terminaux par défaut si vous utilisez Macintosh ou Linux. 
@@ -67,3 +57,9 @@ Puis accédez à l'API via le port 8000 sur votre navigateur sur http://127.0.0.
 Python 3.9 
 
 Django 3.2.9
+
+Django API REST - 3.12.4
+
+Django JWT Authentication - 5.0.0
+
+Django drf Extensions - 0.7.1

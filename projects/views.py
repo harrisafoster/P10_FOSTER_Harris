@@ -32,7 +32,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project = get_object_or_404(Project, pk=pk)
         self.check_object_permissions(request, project)
         project.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Project deleted'}, status=status.HTTP_202_ACCEPTED)
 
 
 class ContributorViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -58,7 +58,7 @@ class ContributorViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         contributor = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, contributor)
         contributor.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Contributor removed'} ,status=status.HTTP_202_ACCEPTED)
 
 
 class IssueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -105,7 +105,7 @@ class IssueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         issue.delete()
         for comment in comments:
             comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Issue deleted'}, status=status.HTTP_202_ACCEPTED)
 
 
 class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -172,4 +172,4 @@ class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         comment = get_object_or_404(Comment, pk=pk, issue=parent_lookup_issue)
         self.check_object_permissions(request, comment)
         comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Comment deleted'}, status=status.HTTP_202_ACCEPTED)
