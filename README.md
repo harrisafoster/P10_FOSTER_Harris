@@ -23,7 +23,7 @@ Projet 10 OpenClassrooms
 
 ## Installation
 ### Pour les développeurs et utilisateurs (windows 10, mac, linux) :
-#### Clonez la source de LitReview localement (en utilisant votre terminal) :
+#### Clonez la source de SoftDesk localement (en utilisant votre terminal) :
 ```sh
 $ git clone https://github.com/harrisafoster/P10_FOSTER_Harris
 $ cd P10_FOSTER_Harris
